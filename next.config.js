@@ -12,6 +12,27 @@ const directory = require('./src/directory/directory.js');
 
 require('dotenv').config({ path: './.env.custom' });
 
+// IMPORTANT:
+// These are ONLY used for the Dev server and MUST
+// be kept in sync with customHttp.yml
+const defaultHeaders = [
+  {
+    key: 'Strict-Transport-Security',
+    value: 'max-age=63072000; includeSubDomains'
+  },
+  {
+    key: 'X-Content-Type-Options',
+    value: 'nosniff'
+  }
+];
+
+if (process.env.PROD_ENV) {
+  defaultHeaders.push({
+    key: 'X-Frame-Options',
+    value: 'SAMEORIGIN'
+  });
+}
+
 module.exports = async (phase, { defaultConfig }) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const headingLinkPlugin = await require('./src/plugins/headings.tsx');
@@ -59,28 +80,12 @@ module.exports = async (phase, { defaultConfig }) => {
       },
       exportPathMap,
       trailingSlash: true,
-      async headers() {
+      headers() {
         return [
           {
             // Apply these headers to all routes in your application.
             source: '/(.*)',
-            headers: [
-              // IMPORTANT:
-              // These are ONLY used for the Dev server and MUST
-              // be kept in sync with customHttp.yml
-              {
-                key: 'Strict-Transport-Security',
-                value: 'max-age=63072000; includeSubDomains'
-              },
-              {
-                key: 'X-Frame-Options',
-                value: 'SAMEORIGIN'
-              },
-              {
-                key: 'X-Content-Type-Options',
-                value: 'nosniff'
-              }
-            ]
+            headers: defaultHeaders
           }
         ];
       }
